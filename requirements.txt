@@ -1,0 +1,11 @@
+streamlit>=1.35
+pymupdf>=1.24
+sentence-transformers>=3.0
+chromadb>=0.5
+scikit-learn>=1.4
+numpy>=1.26
+
+# مزوّد الذكاء الاصطناعي (اختر واحد على الأقل، شيل # اللي مش هتستخدمه)
+anthropic>=0.34
+# openai>=1.40
+cohere>=5.0
