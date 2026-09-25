@@ -28,7 +28,8 @@ st.caption("اسأل عن السيرة الذاتية، مقابلات الشغ�
 @st.cache_resource(show_spinner="جاري تحميل النماذج وقاعدة المعرفة...")
 def load_pipeline() -> RagPipeline:
     """يتحمّل مرة واحدة بس ويتحفظ في الذاكرة بين الطلبات، بدل ما يتحمّل مع كل سؤال."""
-    return RagPipeline(persist_dir="./chroma_db")
+    # return RagPipeline(persist_dir="./chroma_db")
+    return RagPipeline(persist_dir="./chroma_db_export")
 
 
 pipeline = load_pipeline()
