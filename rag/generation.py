@@ -13,13 +13,16 @@ from __future__ import annotations
 import os
 from typing import Any
 
+NO_MATCH_MESSAGE = "The knowledge base doesn't contain information to answer that question."
+
 SYSTEM_PROMPT = (
     "You are a career-advice assistant. Answer ONLY using the CONTEXT "
     "provided below, which comes from the CareerForge knowledge base. "
     "Rules:\n"
     "1. Do not use outside knowledge and do not guess.\n"
-    "2. If the context does not contain the answer, say clearly that the "
-    "knowledge base does not cover it — do not fabricate one.\n"
+    "2. If the context does not contain the answer, reply with EXACTLY "
+    f'this sentence and nothing else: "{NO_MATCH_MESSAGE}" — do not add '
+    "anything before or after it, and do not fabricate an answer.\n"
     "3. Preserve exact numbers, percentages, and table values from the "
     "context rather than paraphrasing them loosely.\n"
     "4. Keep the answer concise and directly responsive to the question."
@@ -136,13 +139,7 @@ def generate_answer(question: str, reranked_chunks: list[dict[str, Any]]) -> dic
     sources = _sources_from_chunks(reranked_chunks)
 
     if not reranked_chunks:
-        return {
-            "answer": (
-                "The knowledge base doesn't contain information to answer "
-                "that question."
-            ),
-            "sources": [],
-        }
+        return {"answer": NO_MATCH_MESSAGE, "sources": []}
 
     if os.environ.get("ANTHROPIC_API_KEY"):
         answer = _call_anthropic(question, context)
@@ -152,5 +149,11 @@ def generate_answer(question: str, reranked_chunks: list[dict[str, Any]]) -> dic
         answer = _call_cohere(question, context)
     else:
         answer = _extractive_fallback(question, reranked_chunks)
+
+    # لو الموديل قرر إن السياق مايكفيش للإجابة، بيرد بنفس جملة NO_MATCH_MESSAGE
+    # بالظبط (مجبور عليها من الـ SYSTEM_PROMPT) — في الحالة دي المصادر المسترجَعة
+    # مضلِّلة (لأنها مش كافية أصلًا)، فبنمسحها بدل ما نعرضها مع رد "لا توجد إجابة".
+    if answer.strip() == NO_MATCH_MESSAGE:
+        sources = []
 
     return {"answer": answer, "sources": sources}
