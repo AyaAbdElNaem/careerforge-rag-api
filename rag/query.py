@@ -36,15 +36,33 @@ class RagPipeline:
 
     def query(self, question: str) -> dict[str, Any]:
         question = question.strip()
+        normalized = question.lower().rstrip("!.؟?، ")
 
-        # trivial greeting / non-question short-circuit — no retrieval needed
-        if question.lower().rstrip("!.? ") in {"hi", "hello", "hey", "yo"}:
+        # trivial greeting — no retrieval needed
+        GREETINGS = {"hi", "hello", "hey", "yo", "مرحبا", "أهلا", "اهلا", "السلام عليكم"}
+        if normalized in GREETINGS:
             result = {
                 "answer": (
                     "Hello! Ask me anything about resumes, job descriptions, "
                     "interviews, salary negotiation, career growth, or data "
                     "career roadmaps — I'll answer from the CareerForge "
                     "knowledge base."
+                ),
+                "sources": [],
+            }
+            return result, [], []
+
+        # trivial thanks / gratitude — no retrieval needed, no sources to show
+        THANKS = {
+            "thanks", "thank you", "thanks!", "thx", "ty",
+            "شكرا", "شكراً", "شكرا لك", "شكرًا", "تسلم", "تسلمي",
+            "يعطيك العافية", "الله يسلمك", "متشكر", "متشكرة",
+        }
+        if normalized in THANKS:
+            result = {
+                "answer": (
+                    "العفو! 🙏 تحت أمرك لو عندك أي سؤال تاني عن السيرة الذاتية، "
+                    "مقابلات الشغل، التفاوض على الراتب، أو التطور المهني."
                 ),
                 "sources": [],
             }
