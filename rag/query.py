@@ -22,6 +22,15 @@ TOP_K_RETRIEVE = 10
 TOP_N_RERANK = 4
 MIN_SIMILARITY = 0.05  # filters out clearly-irrelevant retrieval hits
 
+INTRO_MESSAGE = (
+    "أنا 🎯 **CareerForge RAG**، مساعد افتراضي متخصص في التطوير المهني.\n\n"
+    "بجاوب على أسئلتك بناءً على مكتبة CareerForge الإرشادية اللي بتغطي: "
+    "كتابة السيرة الذاتية، تحليل الوصف الوظيفي، المقابلات السلوكية والتقنية، "
+    "التفاوض على الراتب، بناء العلامة الشخصية، ومسارات أدوار البيانات.\n\n"
+    "كل إجاباتي مبنية على محتوى المكتبة دي بس — لو سؤال برة النطاق ده، "
+    "هقولك بصراحة إن المعلومة مش عندي بدل ما أخترعها."
+)
+
 
 class RagPipeline:
     def __init__(self, persist_dir: str = "./chroma_db"):
@@ -38,18 +47,21 @@ class RagPipeline:
         question = question.strip()
         normalized = question.lower().rstrip("!.؟?، ")
 
-        # trivial greeting — no retrieval needed
+        # trivial greeting — no retrieval needed; introduces itself too
         GREETINGS = {"hi", "hello", "hey", "yo", "مرحبا", "أهلا", "اهلا", "السلام عليكم"}
         if normalized in GREETINGS:
-            result = {
-                "answer": (
-                    "Hello! Ask me anything about resumes, job descriptions, "
-                    "interviews, salary negotiation, career growth, or data "
-                    "career roadmaps — I'll answer from the CareerForge "
-                    "knowledge base."
-                ),
-                "sources": [],
-            }
+            result = {"answer": f"أهلًا! 👋\n\n{INTRO_MESSAGE}", "sources": []}
+            return result, [], []
+
+        # "who are you" / "introduce yourself" — no retrieval needed
+        WHOAMI_KEYWORDS = (
+            "من انت", "من أنت", "مين انت", "مين إنت", "انت مين", "أنت مين",
+            "عرفني بنفسك", "عرف نفسك", "عرفني بيك", "احكيلي عنك", "حدثني عنك",
+            "who are you", "what are you", "introduce yourself",
+            "tell me about yourself", "tell me about you",
+        )
+        if any(kw in normalized for kw in WHOAMI_KEYWORDS):
+            result = {"answer": INTRO_MESSAGE, "sources": []}
             return result, [], []
 
         # trivial thanks / gratitude — no retrieval needed, no sources to show
