@@ -13,8 +13,8 @@ from rag.query import RagPipeline, query_rag
 # ============================================================
 # غيّر السطر ده بس لو حابب تغيّر اسم العرض في الواجهة
 # ============================================================
-APP_DISPLAY_NAME = "Career AI"
-APP_TAGLINE = "مساعدك الذكي للتطوير المهني في مجال البيانات"
+APP_DISPLAY_NAME = "Forjenta"
+APP_TAGLINE = "Forge your path. Backed by real sources."
 
 st.set_page_config(
     page_title=APP_DISPLAY_NAME,
